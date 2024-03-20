@@ -45,3 +45,33 @@ php artisan config:cache
 php artisan key:generate
 
 ***************************************************************************************************************************************
+
+Instalar NodeJs
+--------------------------------------------------
+apt install nodejs
+
+
+
+Instalar NPM 
+--------------------------------------------------
+apt install npm
+
+
+
+Instalar las dependencias del package.json
+--------------------------------------------------
+npm i
+
+
+
+Generar el archivo de produccion
+--------------------------------------------------
+npm run build
+
+
+
+
+
+
+
+
