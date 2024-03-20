@@ -54,9 +54,6 @@ services:
         depends_on:
             - nginx-proxy
             - letsencrypt
-    #   labels:
-    #       - com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy
-    #       - com.github.jrcs.letsencrypt_nginx_proxy_companion.docker_gen # Indica el uso de HTTPS
 
     mariadb:
         container_name: ${COMPOSE_PROJECT_NAME}-mariadb
@@ -83,34 +80,3 @@ services:
         environment:
             PMA_HOST: mariadb
             UPLOAD_LIMIT: 100000000
-    # TESTING nginx (solo como servidor HTML)
-    # www-testing:
-    #     container_name: ${COMPOSE_PROJECT_NAME}-www-testing
-    #     image: nginx
-    #     restart: always
-    #     expose:
-    #         - '80' # Expone el puerto en forma interna solo para la red de Docker ('expose' en vez de 'ports')
-    #     volumes:
-    #         - ./www/testing:/usr/share/nginx/html:ro # Monta el directorio con los archivos del sitio web en el contenedor nginx
-    #     environment:
-    #         - VIRTUAL_HOST=testing.fluxa.com.ar # Los vhosts a reportar a nginx-proxy (separados por coma)
-    #     depends_on:
-    #         - nginx-proxy
-
-    # TESTING apache+php
-    # www-testing:
-    #     container_name: ${COMPOSE_PROJECT_NAME}-www-testing
-    #     restart: always
-    #     build:
-    #         dockerfile: Dockerfile-apache-testing
-    #     expose:
-    #         - '80' # Expone el puerto en forma interna solo para la red de Docker ('expose' en vez de 'ports')
-    #     volumes:
-    #         - ./apache-testing/confd/config.ini:/usr/local/etc/php/conf.d/config.ini
-    #         - ./apache-testing/log:/var/log/apache2
-    #         - ./apache-testing/vhost/testing.conf:/etc/apache2/sites-available/000-default.conf
-    #         - ./www/testing:/var/www/testing
-    #     environment:
-    #         - VIRTUAL_HOST=testing.fluxa.com.ar # Los vhosts a reportar a nginx-proxy (separados por coma)
-    #     depends_on:
-    #         - nginx-proxy

@@ -22,13 +22,8 @@ LARAVEL
 
 composer install
 
-chown -R www-data:www-data /var/www/scada2/bootstrap/cache
-chown -R www-data:www-data /var/www/scada2/public
-chown -R www-data:www-data /var/www/scada2/storage
-
-chmod -R 775 /var/www/scada2/bootstrap/cache
-chmod -R 775 /var/www/scada2/public
-chmod -R 775 /var/www/scada2/storage
+chown -R www-data:www-data /var/www/scada2/bootstrap/cache; chown -R www-data:www-data /var/www/scada2/public ; chown -R www-data:www-data /var/www/scada2/storage
+chmod -R 775 /var/www/scada2/bootstrap/cache ; chmod -R 775 /var/www/scada2/public ; chmod -R 775 /var/www/scada2/storage
 
 php artisan storage:link
 
