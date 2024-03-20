@@ -117,20 +117,7 @@
 
             <!-- Right Side Of Navbar -->
             <ul class="navbar-nav ms-auto">
-
-                @guest
-
-                    @if (Route::current()->getName() == 'login')
-                        <form action="{{ route('front') }}" method="POST">
-                            @csrf
-                            <button type="submit" class="nav-link">Home</button>
-                        </form>
-                    @else
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('login') }}">Acceder</a>
-                        </li>
-                    @endif
-                @else
+                @auth
                     <li class="nav-item dropdown">
                         <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button"
                             data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
@@ -146,7 +133,7 @@
                             </form>
                         </div>
                     </li>
-                @endguest
+                @endauth
             </ul>
         </div>
     </div>
