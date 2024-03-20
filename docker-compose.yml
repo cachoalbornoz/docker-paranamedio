@@ -1,4 +1,4 @@
-version: '3'
+version: '3.6'
 
 services:
 
@@ -35,8 +35,8 @@ services:
             - ./nginx/html:/usr/share/nginx/html # Monta el directorio para que LetsEncrypt pueda escribir los archivos de validación
             - ./nginx/vhostd:/etc/nginx/vhost.d # Monta el directorio para que LetsEncrypt pueda escribir en los vhosts
 
-    www-sgis:
-        container_name: ${COMPOSE_PROJECT_NAME}-www-sgis
+    www-scada2:
+        container_name: ${COMPOSE_PROJECT_NAME}-www-scada2
         restart: always
         build:
             dockerfile: Dockerfile-apache
@@ -45,13 +45,12 @@ services:
         volumes:
             - ./apache/confd/config.ini:/usr/local/etc/php/conf.d/config.ini
             - ./apache/log:/var/log/apache2
-            - ./apache/vhost/sgis.conf:/etc/apache2/sites-available/000-default.conf
-            - ./www/sgis:/var/www/sgis
-            - /home/precarga:/var/www/sgis/storage/app/precarga:rw
+            - ./apache/vhost/scada2.conf:/etc/apache2/sites-available/000-default.conf
+            - ./www/scada2:/var/www/scada2
         environment:
-            - VIRTUAL_HOST=sgis.misiones.fluxa.com.ar #,fluxsasistemas.host # Los vhosts a reportar a nginx-proxy (separados por coma)
-            - LETSENCRYPT_HOST=sgis.misiones.fluxa.com.ar #,fluxsasistemas.host # Los dominios a certificar (separados por coma)
-            - LETSENCRYPT_EMAIL=jose@chiardola.com # Email para validación / notificaciones
+            - VIRTUAL_HOST=scada2.paranamedio.com #,fluxsasistemas.host # Los vhosts a reportar a nginx-proxy (separados por coma)
+            - LETSENCRYPT_HOST=scada2.paranamedio.com #,fluxsasistemas.host # Los dominios a certificar (separados por coma)
+            - LETSENCRYPT_EMAIL=cachoalbornoz@gmail.com # Email para validación / notificaciones
         depends_on:
             - nginx-proxy
             - letsencrypt

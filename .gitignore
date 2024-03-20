@@ -3,3 +3,5 @@ mariadb/backups
 mariadb/.env
 mariadb/logs/*.log
 apache/logs
+apache/log
+nginx/*

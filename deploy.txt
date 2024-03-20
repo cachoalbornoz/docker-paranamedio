@@ -22,17 +22,17 @@ LARAVEL
 
 composer install
 
-chown -R www-data:www-data /var/www/sgis/bootstrap/cache
-chown -R www-data:www-data /var/www/sgis/public
-chown -R www-data:www-data /var/www/sgis/storage
+chown -R www-data:www-data /var/www/scada2/bootstrap/cache
+chown -R www-data:www-data /var/www/scada2/public
+chown -R www-data:www-data /var/www/scada2/storage
 
-chmod -R 775 /var/www/sgis/bootstrap/cache
-chmod -R 775 /var/www/sgis/public
-chmod -R 775 /var/www/sgis/storage
+chmod -R 775 /var/www/scada2/bootstrap/cache
+chmod -R 775 /var/www/scada2/public
+chmod -R 775 /var/www/scada2/storage
 
 php artisan storage:link
 
-# ln -s /var/www/sgis/public /var/www/html
+# ln -s /var/www/scada2/public /var/www/html
 # php artisan migrate:fresh --seed
 
 routes/web.php
