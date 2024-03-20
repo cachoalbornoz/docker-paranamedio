@@ -1,0 +1,117 @@
+version: '3'
+
+services:
+
+    nginx-proxy:
+        container_name: ${COMPOSE_PROJECT_NAME}-nginx-proxy
+        image: jwilder/nginx-proxy:1.3 # Es un nginx que permite redireccionar el tráfico hacia otros contenedores
+        restart: always
+        ports:
+            # Configura puertos de escucha hacia adentro y hacia afuera
+            - '80:80' # HTTP
+            - '443:443' # HTTPS (SSL)
+        volumes:
+            - /var/run/docker.sock:/tmp/docker.sock:ro # Monta el socket de Docker para mantener actualizada la configuración de los vhosts de los contenedores que se ejecutan o detienen.
+            - ./nginx/acme:/etc/acme.sh # Directorio para almacenar los archivos y configuraciones de acme.sh
+            - ./nginx/certs:/etc/nginx/certs:ro # Directorio para almacenar los certificados SSL/TLS
+            - ./nginx/confd:/etc/nginx/conf.d # Configuración personalizada de Nginx
+            - ./nginx/html:/usr/share/nginx/html # Directorio para que LetsEncrypt pueda escribir los archivos de validación
+            - ./nginx/vhostd:/etc/nginx/vhost.d # Directorio para que LetsEncrypt pueda escribir en los vhosts
+        labels:
+            - com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy=true # Requerido según la documentación
+        # environment:
+        #     - DEFAULT_PROTO=https # Configura el encabezado X-Forwarded-Proto
+
+    letsencrypt:
+        container_name: ${COMPOSE_PROJECT_NAME}-letsencrypt
+        image: jrcs/letsencrypt-nginx-proxy-companion:2.2 # es como un compañero para el nginx-proxy. Se encarga de generar y administrar los certificados SSL mediante Let's Encrypt para los dominios configurados en los otros servicios.
+        restart: always
+        environment:
+            - NGINX_PROXY_CONTAINER=nginx-proxy
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock:ro # Monta el socket de Docker para permitir la comunicación con el contenedor nginx-proxy
+            - ./nginx/acme:/etc/acme.sh # Monta el directorio para los archivos y configuraciones de acme.sh
+            - ./nginx/certs:/etc/nginx/certs:rw # Monta el directorio para los certificados SSL/TLS
+            - ./nginx/html:/usr/share/nginx/html # Monta el directorio para que LetsEncrypt pueda escribir los archivos de validación
+            - ./nginx/vhostd:/etc/nginx/vhost.d # Monta el directorio para que LetsEncrypt pueda escribir en los vhosts
+
+    www-sgis:
+        container_name: ${COMPOSE_PROJECT_NAME}-www-sgis
+        restart: always
+        build:
+            dockerfile: Dockerfile-apache
+        expose:
+            - '80' # Expone el puerto en forma interna solo para la red de Docker ('expose' en vez de 'ports')
+        volumes:
+            - ./apache/confd/config.ini:/usr/local/etc/php/conf.d/config.ini
+            - ./apache/log:/var/log/apache2
+            - ./apache/vhost/sgis.conf:/etc/apache2/sites-available/000-default.conf
+            - ./www/sgis:/var/www/sgis
+            - /home/precarga:/var/www/sgis/storage/app/precarga:rw
+        environment:
+            - VIRTUAL_HOST=sgis.misiones.fluxa.com.ar #,fluxsasistemas.host # Los vhosts a reportar a nginx-proxy (separados por coma)
+            - LETSENCRYPT_HOST=sgis.misiones.fluxa.com.ar #,fluxsasistemas.host # Los dominios a certificar (separados por coma)
+            - LETSENCRYPT_EMAIL=jose@chiardola.com # Email para validación / notificaciones
+        depends_on:
+            - nginx-proxy
+            - letsencrypt
+    #   labels:
+    #       - com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy
+    #       - com.github.jrcs.letsencrypt_nginx_proxy_companion.docker_gen # Indica el uso de HTTPS
+
+    mariadb:
+        container_name: ${COMPOSE_PROJECT_NAME}-mariadb
+        image: mariadb:10.9.6
+        restart: always
+        ports:
+            - '3306:3306'
+        command: --default-authentication-plugin=mysql_native_password --skip-log-bin --default-time-zone=-03:00 --expire_logs_days=10 --sql_mode="" --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --performance_schema=ON --event_scheduler=ON --log_error=/var/log/mysql/mysql_error.log --slow_query_log=1 --slow_query_log_file=/var/log/mysql/mysql_slow.log --long_query_time=10 --log_queries_not_using_indexes=1
+        environment:
+            - MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
+            - MYSQL_PWD=$MYSQL_ROOT_PASSWORD
+            - TZ=America/Argentina/Buenos_Aires
+        volumes:
+            - ./mariadb/data:/var/lib/mysql
+            - ./mariadb/dump:/docker-entrypoint-initdb.d
+            - ./mariadb/logs:/var/log/mysql:Z
+
+    phpmyadmin:
+        container_name: ${COMPOSE_PROJECT_NAME}-phpmyadmin
+        image: phpmyadmin/phpmyadmin:5.2.1
+        restart: always
+        ports:
+            - '8181:80'
+        environment:
+            PMA_HOST: mariadb
+            UPLOAD_LIMIT: 100000000
+    # TESTING nginx (solo como servidor HTML)
+    # www-testing:
+    #     container_name: ${COMPOSE_PROJECT_NAME}-www-testing
+    #     image: nginx
+    #     restart: always
+    #     expose:
+    #         - '80' # Expone el puerto en forma interna solo para la red de Docker ('expose' en vez de 'ports')
+    #     volumes:
+    #         - ./www/testing:/usr/share/nginx/html:ro # Monta el directorio con los archivos del sitio web en el contenedor nginx
+    #     environment:
+    #         - VIRTUAL_HOST=testing.fluxa.com.ar # Los vhosts a reportar a nginx-proxy (separados por coma)
+    #     depends_on:
+    #         - nginx-proxy
+
+    # TESTING apache+php
+    # www-testing:
+    #     container_name: ${COMPOSE_PROJECT_NAME}-www-testing
+    #     restart: always
+    #     build:
+    #         dockerfile: Dockerfile-apache-testing
+    #     expose:
+    #         - '80' # Expone el puerto en forma interna solo para la red de Docker ('expose' en vez de 'ports')
+    #     volumes:
+    #         - ./apache-testing/confd/config.ini:/usr/local/etc/php/conf.d/config.ini
+    #         - ./apache-testing/log:/var/log/apache2
+    #         - ./apache-testing/vhost/testing.conf:/etc/apache2/sites-available/000-default.conf
+    #         - ./www/testing:/var/www/testing
+    #     environment:
+    #         - VIRTUAL_HOST=testing.fluxa.com.ar # Los vhosts a reportar a nginx-proxy (separados por coma)
+    #     depends_on:
+    #         - nginx-proxy

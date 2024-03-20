@@ -1,0 +1,42 @@
+.blink {
+    animation: blink 1s steps(1, end) infinite;
+}
+
+@keyframes blink {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.nivel1 {
+    background-color: #AED3E5 !important;
+}
+
+.nivel2 {
+    background-color: #7FB2CA !important;
+}
+
+.nivel3 {
+    background-color: #7AA4B8 !important;
+}
+
+
+.bomba1 {
+    background-color: #dde5f8 !important;
+}
+
+.bomba2 {
+    background-color: #e8ddf8 !important;
+}
+
+.bomba3 {
+    background-color: #f3ddf8 !important;
+}

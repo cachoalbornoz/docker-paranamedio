@@ -1,0 +1,18 @@
+FROM php:7.4-apache
+
+#RUN usermod -u 1000 www-data
+#RUN groupmod -g 1000 www-data
+
+RUN a2enmod rewrite
+RUN apt-get update -y
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+RUN apt-get install -y git zlib1g-dev libpng-dev libgd-dev libzip-dev unzip libsodium-dev libxml2-dev
+RUN docker-php-ext-install zip mysqli pdo_mysql gd sodium soap
+RUN mkdir -p /var/www/sgis
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
+
+WORKDIR /var/www/sgis
+
+EXPOSE 80
+
+CMD apachectl -D FOREGROUND

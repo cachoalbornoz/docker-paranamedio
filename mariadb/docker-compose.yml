@@ -1,0 +1,62 @@
+version: '3.6'
+
+services:
+
+  mariadb:
+    image: mariadb:10.9.6
+    container_name: mariadb
+    restart: always
+    ports:
+      - "3306:3306"
+    command: 
+      --default-authentication-plugin=mysql_native_password
+      --skip-log-bin
+      --collation-server=utf8mb4_unicode_ci
+      --default-time-zone=-03:00
+      --sql_mode=""
+      --innodb_buffer_pool_size=512M
+      --innodb_log_file_size=64M
+      --query_cache_type=0
+      --query_cache_size=0
+      --query_cache_limit=8M
+      --thread_cache_size=30
+      --performance_schema=ON
+      --event_scheduler=ON
+      --log_error=/var/log/mysql/mysql_error.log
+      --slow_query_log=1
+      --slow_query_log_file=/var/log/mysql/mysql_slow.log
+      --long_query_time=10
+      --log_queries_not_using_indexes=1
+
+    environment:
+      - PUID=$UID
+      - PGID=$GID 
+      - MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
+      - MYSQL_PWD=$MYSQL_ROOT_PASSWORD
+      - TZ=America/Argentina/Buenos_Aires
+
+    volumes:
+      - ./data:/var/lib/mysql
+      - ./dump:/docker-entrypoint-initdb.d
+      - ./logs:/var/log/mysql:Z
+    networks:
+      parana-medio:
+        ipv4_address: 172.18.0.2
+
+
+  phpmyadmin:
+    container_name: phpmyadmin
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    ports:
+      - "8181:80"
+    environment:
+      PMA_HOST: mariadb
+      UPLOAD_LIMIT: 100000000
+    networks:
+      parana-medio:
+        ipv4_address: 172.18.0.3
+
+networks:
+  parana-medio:
+    external: true

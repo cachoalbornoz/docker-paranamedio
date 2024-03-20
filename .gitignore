@@ -1,0 +1,5 @@
+mariadb/data
+mariadb/backups
+mariadb/.env
+mariadb/logs/*.log
+apache/logs

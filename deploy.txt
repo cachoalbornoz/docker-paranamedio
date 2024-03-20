@@ -1,0 +1,121 @@
+DOCKER
+--------
+
+docker-compose down
+docker-compose up -d
+docker-compose up -d --force-recreate --remove-orphans
+docker ps
+docker ps --format "table {{.Names}}\t{{.Ports}}\t{{.Status}}"
+
+
+Actualizar Portainer
+$ docker stop portainer-server
+$ docker rm portainer-server
+$ docker pull portainer/portainer
+$ docker run -d -p 9443:9443 --name portainer -v /var/run/docker.sock:/var/run/docker.sock -v /home/administrador/_docker/portainer:/data portainer/portainer-ee:latest
+
+
+***************************************************************************************************************************************
+
+LARAVEL
+--------
+
+composer install
+
+chown -R www-data:www-data /var/www/sgis/bootstrap/cache
+chown -R www-data:www-data /var/www/sgis/public
+chown -R www-data:www-data /var/www/sgis/storage
+
+chmod -R 775 /var/www/sgis/bootstrap/cache
+chmod -R 775 /var/www/sgis/public
+chmod -R 775 /var/www/sgis/storage
+
+php artisan storage:link
+
+# ln -s /var/www/sgis/public /var/www/html
+# php artisan migrate:fresh --seed
+
+routes/web.php
+	use Illuminate\Support\Facades\URL;
+	URL::forceScheme('https');
+
+php artisan optimize:clear
+php artisan optimize
+php artisan config:cache
+php artisan key:generate
+
+***************************************************************************************************************************************
+
+USUARIOS
+--------
+
+LADO Host
+	uid=1000(administrador) gid=1000(administrador) groups=1000(administrador),10(wheel),33(tape),977(docker)
+	uid=33(precarga) gid=33(tape) groups=33(tape)
+
+Lado Docker Apache
+	uid=33(www-data) gid=33(www-data) groups=33(www-data)
+
+----
+$ nano /etc/ssh/sshd_config
+
+	#Subsystem      sftp    /usr/libexec/openssh/sftp-server
+	Subsystem       sftp    internal-sftp
+
+	Match User precarga
+		X11Forwarding no
+		PasswordAuthentication yes
+		AllowTcpForwarding no
+		ChrootDirectory /home
+		ForceCommand internal-sftp -u 002
+		# -u 002 = Permisos 775. Máscara de permisos (umask) para los archivos y directorios creados por el usuario.
+
+	Match User martincongo
+		X11Forwarding no
+		PasswordAuthentication yes
+		AllowTcpForwarding no
+		ChrootDirectory /mnt
+		ForceCommand internal-sftp -u 000
+		# -u 000 = Permisos 777. Máscara de permisos (umask) para los archivos y directorios creados por el usuario.
+
+	Match User cargapdfradar
+		X11Forwarding no
+		PasswordAuthentication yes
+		AllowTcpForwarding no
+		ChrootDirectory /mnt
+		ForceCommand internal-sftp -u 000
+		# -u 000 = Permisos 777. Máscara de permisos (umask) para los archivos y directorios creados por el usuario.
+
+	Match User marcosrios
+		X11Forwarding no
+		PasswordAuthentication yes
+		AllowTcpForwarding no
+		ChrootDirectory /mnt
+		ForceCommand internal-sftp -u 000
+		# -u 000 = Permisos 777. Máscara de permisos (umask) para los archivos y directorios creados por el usuario.
+
+$ systemctl restart sshd
+----
+
+***************************************************************************************************************************************
+
+CRON MISIONES
+---------------
+
+# HELIPAGOS REGISTRAR PAGOS DEL DIA ANTERIOR (todos los días a las 01:30 am)
+30 1 * * *	curl -k "https://sgis.misiones.fluxa.com.ar/cron/helipagosRegistarPagosAC?desde=$(date -d yesterday +\%Y-\%m-\%d)&hasta=$(date -d yesterday +\%Y-\%m-\%d)" > /dev/null 2>&1
+
+# HELIPAGOS REGISTRAR PAGOS DE LA SEMANA ANTERIOR (los lunes a las 02:30 am)
+30 2 * * 1	curl -k "https://sgis.misiones.fluxa.com.ar/cron/helipagosRegistarPagosAC?desde=$(date -d 'last Monday' +\%Y-\%m-\%d)&hasta=$(date -d 'last Sunday' +\%Y-\%m-\%d)" > /dev/null 2>&1
+
+# HELIPAGOS REGISTRAR PAGOS DEL MES ANTERIOR (el primer día del mes a las 03:30 am)
+30 3 1 * *	curl -k "https://sgis.misiones.fluxa.com.ar/cron/helipagosRegistarPagosAC?desde=$(date -d "$(date +\%Y-\%m-01) -1 month" +\%Y-\%m-\%d)&hasta=$(date -d "$(date +\%Y-\%m-01) -1 day" +\%Y-\%m-\%d)" > /dev/null 2>&1
+
+# BACKUP BASE DE DATOS
+0 8-17 * * 1-5	docker exec -i fluxa-mariadb mysqldump --user root --password='s2rYn1KtD5bU8W3xZv' sgis_db | gzip > /home/administrador/_docker/mariadb/backups/misiones_sgis_db_$(date +\%Y\%m\%d-\%H\%M).sql.gz
+
+# RSYNC BACKUP
+5 8-17 * * 1-5	rsync -az /home/administrador/_docker/mariadb /mnt/WD4TB/sgismisiones_backup/
+5 8-17 * * 1-5	rsync -az /home/administrador/_docker/www/sgis/storage/app/capturas /mnt/WD4TB/sgismisiones_backup/
+
+*******************************************************************************
