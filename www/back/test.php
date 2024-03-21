@@ -44,7 +44,7 @@ $loop->addPeriodicTimer(5, function (\React\EventLoop\TimerInterface $timer) use
         Timer\timeout($q($url)->then(
             function (ResponseInterface $response) use ($id, $url) {
                 // Procesar respuesta
-                $xml = new SimpleXMLElement($response->getBody());
+                $xml = new SimpleXMLElement($response->getBody());                
                 guardarXml($id, $xml);
                 print "Updated placa $id, con la IP $url  \n";
             },

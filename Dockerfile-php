@@ -9,4 +9,4 @@ RUN mkdir -p /var/www/back
 
 WORKDIR /var/www/back
 
-CMD [ "php", "./lecturas.php" ]
+CMD [ "php", "./test.php" ]

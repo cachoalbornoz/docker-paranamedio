@@ -56,8 +56,8 @@ services:
             - letsencrypt
 
     script-lecturas:
-        container_name: ${COMPOSE_PROJECT_NAME}-www-back
-        restart: always
+        container_name: ${COMPOSE_PROJECT_NAME}-script-lecturas
+        #restart: always
         build:
             dockerfile: Dockerfile-php
         volumes:

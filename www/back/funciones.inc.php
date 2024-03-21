@@ -5,6 +5,9 @@ require __DIR__ . '/vendor/autoload.php';
 
 use React\MySQL\QueryResult;
 
+define('CONN', conectar());
+
+
 function conectar()
 {
     $cnx = mysqli_connect(SERVER_IP, USERNAME, PASSWORD, MYSQL_DATABASE);
@@ -34,14 +37,17 @@ function conectarAsync()
 }
 
 function habilitarLecturas(){
-    $conn = conectar();
-    mysqli_query($conn, 'UPDATE tbl_setting SET f_detenerlecturas=0, f_placasaleer = 0, f_reintentos = 0, f_iteracciones = 0 WHERE f_idsetting = 1');
+    mysqli_query(CONN, 'UPDATE tbl_setting SET f_detenerlecturas=0, f_placasaleer = 0, f_reintentos = 0, f_iteracciones = 0 WHERE f_idsetting = 1');
+}
+
+
+function informarPlacas($cantidad)
+{
+    mysqli_query(CONN, "UPDATE tbl_setting SET f_placasaleer = $cantidad WHERE f_idsetting = 1");
 }
 
 function armarXML($f_idplaca, $xml)
 {
-    $conn = conectar();
-
     // Convertir valores de btnx
     $btn0_value = ($xml->btn0 == 'up') ? 0 : 1;
     $btn1_value = ($xml->btn1 == 'up') ? 0 : 1;
@@ -53,7 +59,7 @@ function armarXML($f_idplaca, $xml)
     $btn7_value = ($xml->btn7 == 'up') ? 0 : 1;
 
     // Chequear si esta el registro
-    $query_check = mysqli_query($conn, "SELECT f_idplaca FROM tbl_datalogger_electrotas WHERE f_idplaca = $f_idplaca");
+    $query_check = mysqli_query(CONN, "SELECT f_idplaca FROM tbl_datalogger_electrotas WHERE f_idplaca = $f_idplaca");
 
     if(mysqli_num_rows($query_check) == 0) {
         $query = "INSERT INTO tbl_datalogger_electrotas(
@@ -130,15 +136,10 @@ function armarXML($f_idplaca, $xml)
     return $query;
 }
 
-function guardaXML($f_idplaca, $xml)
+function guardarXML($f_idplaca, $xml)
 {
-    $conn = conectar();
     $query = armarXML($f_idplaca, $xml);
-
-    print "Query " .$query ."\n";
-
-    mysqli_query($conn, $query) or die($query);
-    desconectar($conn);
+    mysqli_query(CONN, $query) or die($query);
 }
 
 function guardarXmlAsync($f_idplaca, $xml)
@@ -157,14 +158,12 @@ function guardarXmlAsync($f_idplaca, $xml)
 
 function getPlacas()
 {
-    $conn = conectar();
-
     // SQL QUERY
     $query = 'SELECT f_idplaca, f_ip FROM `tbl_placas` WHERE f_habilitada = 1;';
 
     // FETCHING DATA FROM DATABASE
     $result = [];
-    $data   = mysqli_query($conn, $query);
+    $data   = mysqli_query(CONN, $query);
     while ($row = mysqli_fetch_array($data)) {
         $result[] = $row;
     }
@@ -173,48 +172,36 @@ function getPlacas()
 
 function limpiarDesconexion()
 {
-    $conn = conectar();
-    mysqli_query($conn, 'UPDATE tbl_setting SET f_placasaleer = 0, f_reintentos = 0, f_iteracciones = 0 WHERE f_idsetting = 1');
+    mysqli_query(CONN, 'UPDATE tbl_setting SET f_placasaleer = 0, f_reintentos = 0, f_iteracciones = 0 WHERE f_idsetting = 1');
 }
 
 function limpiarReintentos()
 {
-    $conn = conectar();
-    mysqli_query($conn, 'UPDATE tbl_setting SET f_reintentos = 0, f_iteracciones = 0 WHERE f_idsetting = 1');
+    mysqli_query(CONN, 'UPDATE tbl_setting SET f_reintentos = 0, f_iteracciones = 0 WHERE f_idsetting = 1');
 }
 
 function chequearIteraciones()
 {
-    $conn = conectar();
-    $query = mysqli_query($conn, 'SELECT f_iteracciones FROM tbl_setting WHERE f_idsetting = 1');
+    $query = mysqli_query(CONN, 'SELECT f_iteracciones FROM tbl_setting WHERE f_idsetting = 1');
     $row   = mysqli_fetch_array($query);
     return ($row['f_iteracciones'] > 1) ? true : false;
 }
 
-function informarPlacas($cantidad)
-{
-    $conn = conectar();
-    mysqli_query($conn, "UPDATE tbl_setting SET f_placasaleer = $cantidad WHERE f_idsetting = 1");
-}
-
 function informarDesconexion()
 {
-    $conn = conectar();
-    mysqli_query($conn, 'UPDATE tbl_setting SET f_reintentos = f_reintentos + 1 WHERE f_idsetting = 1');
-
-    $query = mysqli_query($conn, 'SELECT * FROM tbl_setting WHERE f_idsetting = 1');
+    mysqli_query(CONN, 'UPDATE tbl_setting SET f_reintentos = f_reintentos + 1 WHERE f_idsetting = 1');
+    $query = mysqli_query(CONN, 'SELECT * FROM tbl_setting WHERE f_idsetting = 1');
     $row   = mysqli_fetch_array($query);
     if ($row['f_reintentos'] == $row['f_placasaleer']) {
-        mysqli_query($conn, 'UPDATE tbl_setting SET f_reintentos = 0, f_iteracciones = 1 WHERE f_idsetting = 1');
+        mysqli_query(CONN, 'UPDATE tbl_setting SET f_reintentos = 0, f_iteracciones = 1 WHERE f_idsetting = 1');
     }
 
 }
 
 function cortarLoop()
 {
-    $conn  = conectar();
     $query = 'SELECT f_detenerlecturas FROM `tbl_setting`;';
-    $data  = mysqli_query($conn, $query);
+    $data  = mysqli_query(CONN, $query);
     $row   = mysqli_fetch_array($data);
     return  ($row['f_detenerlecturas'] == 1) ? true : false;
 }
