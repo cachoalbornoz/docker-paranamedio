@@ -1,6 +1,6 @@
 <?php
 
 define('SERVER_IP', 'mariadb');
-define('USERNAME', 'root');
-define('PASSWORD', '12345678');
+define('USERNAME', 'scada_admin');
+define('PASSWORD', '7ek5?^sXnU~9');
 define('MYSQL_DATABASE', 'scada2'); 

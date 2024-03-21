@@ -9,8 +9,4 @@ RUN mkdir -p /var/www/back
 
 WORKDIR /var/www/back
 
-EXPOSE 8081
-
-CMD apachectl -D FOREGROUND
-
 CMD [ "php", "./lecturas.php" ]
