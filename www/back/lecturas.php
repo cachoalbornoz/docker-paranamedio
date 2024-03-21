@@ -46,7 +46,7 @@ $loop->addPeriodicTimer(5, function (\React\EventLoop\TimerInterface $timer) use
             function (ResponseInterface $response) use ($id, $url) {
                 // Procesar respuesta
                 $xml = new SimpleXMLElement($response->getBody());
-                guardarXmlAsync($id, $xml);
+                guardarXml($id, $xml);
             },
             function (Exception $exception) use ($id, $url, $loop, $timer) {
                 if($exception->getCode() == 0) {

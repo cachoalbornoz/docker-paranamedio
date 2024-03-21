@@ -34,7 +34,8 @@ function conectarAsync()
 }
 
 function habilitarLecturas(){
-    mysqli_query(conectar(), 'UPDATE tbl_setting SET f_detenerlecturas=0, f_placasaleer = 0, f_reintentos = 0, f_iteracciones = 0 WHERE f_idsetting = 1');
+    $conn = conectar();
+    mysqli_query($conn, 'UPDATE tbl_setting SET f_detenerlecturas=0, f_placasaleer = 0, f_reintentos = 0, f_iteracciones = 0 WHERE f_idsetting = 1');
 }
 
 function armarXML($f_idplaca, $xml)
@@ -172,12 +173,14 @@ function getPlacas()
 
 function limpiarDesconexion()
 {
-    mysqli_query(conectar(), 'UPDATE tbl_setting SET f_placasaleer = 0, f_reintentos = 0, f_iteracciones = 0 WHERE f_idsetting = 1');
+    $conn = conectar();
+    mysqli_query($conn, 'UPDATE tbl_setting SET f_placasaleer = 0, f_reintentos = 0, f_iteracciones = 0 WHERE f_idsetting = 1');
 }
 
 function limpiarReintentos()
 {
-    mysqli_query(conectar(), 'UPDATE tbl_setting SET f_reintentos = 0, f_iteracciones = 0 WHERE f_idsetting = 1');
+    $conn = conectar();
+    mysqli_query($conn, 'UPDATE tbl_setting SET f_reintentos = 0, f_iteracciones = 0 WHERE f_idsetting = 1');
 }
 
 function chequearIteraciones()
@@ -190,7 +193,8 @@ function chequearIteraciones()
 
 function informarPlacas($cantidad)
 {
-    mysqli_query(conectar(), "UPDATE tbl_setting SET f_placasaleer = $cantidad WHERE f_idsetting = 1");
+    $conn = conectar();
+    mysqli_query($conn, "UPDATE tbl_setting SET f_placasaleer = $cantidad WHERE f_idsetting = 1");
 }
 
 function informarDesconexion()
