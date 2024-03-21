@@ -133,11 +133,11 @@ function armarXML($f_idplaca, $xml)
 function guardaXML($f_idplaca, $xml)
 {
     $conn = conectar();
-
     $query = armarXML($f_idplaca, $xml);
-    mysqli_query($conn, $query) or die($query);
-    print "Xml PlacaId: $f_idplaca  \n";
 
+    print "Query " .$query ."\n";
+
+    mysqli_query($conn, $query) or die($query);
     desconectar($conn);
 }
 
