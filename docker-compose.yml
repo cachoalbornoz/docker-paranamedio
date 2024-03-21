@@ -80,3 +80,16 @@ services:
         environment:
             PMA_HOST: mariadb
             UPLOAD_LIMIT: 100000000
+
+    www-lecturas:
+        container_name: ${COMPOSE_PROJECT_NAME}-www-back
+        restart: always
+        build:
+            dockerfile: Dockerfile-php
+        expose:
+            - '80' # Expone el puerto en forma interna solo para la red de Docker ('expose' en vez de 'ports')
+        volumes:
+            - ./apache/confd/config.ini:/usr/local/etc/php/conf.d/config.ini
+            - ./apache/log:/var/log/apache2
+            - ./apache/vhost/back.conf:/etc/apache2/sites-available/000-default.conf
+            - ./www/back:/var/www/back
