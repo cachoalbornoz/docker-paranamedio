@@ -11,7 +11,6 @@
             <div class="card">
                 <div class="card-header">
                     Lecturas
-                    <button id="start-lecturas" class="btn btn-outline-success btn-sm">Activar</button>
                     <button id="stop-lecturas" class="btn btn-outline-danger btn-sm">Detener</button>
                 </div>
 

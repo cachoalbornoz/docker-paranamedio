@@ -2,6 +2,32 @@ version: '3.6'
 
 services:
 
+    mariadb:
+        container_name: ${COMPOSE_PROJECT_NAME}-mariadb
+        image: mariadb:10.9.6
+        restart: always
+        ports:
+            - '3306:3306'
+        command: --default-authentication-plugin=mysql_native_password --skip-log-bin --default-time-zone=-03:00 --expire_logs_days=10 --sql_mode="" --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --performance_schema=ON --event_scheduler=ON --log_error=/var/log/mysql/mysql_error.log --slow_query_log=1 --slow_query_log_file=/var/log/mysql/mysql_slow.log --long_query_time=10 --log_queries_not_using_indexes=1
+        environment:
+            - MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
+            - MYSQL_PWD=$MYSQL_ROOT_PASSWORD
+            - TZ=America/Argentina/Buenos_Aires
+        volumes:
+            - ./mariadb/data:/var/lib/mysql
+            - ./mariadb/dump:/docker-entrypoint-initdb.d
+            - ./mariadb/logs:/var/log/mysql:Z
+
+    phpmyadmin:
+        container_name: ${COMPOSE_PROJECT_NAME}-phpmyadmin
+        image: phpmyadmin/phpmyadmin:5.2.1
+        restart: always
+        ports:
+            - '8181:80'
+        environment:
+            PMA_HOST: mariadb
+            UPLOAD_LIMIT: 100000000
+
     nginx-proxy:
         container_name: ${COMPOSE_PROJECT_NAME}-nginx-proxy
         image: jwilder/nginx-proxy:1.3 # Es un nginx que permite redireccionar el tráfico hacia otros contenedores
@@ -62,30 +88,3 @@ services:
             dockerfile: Dockerfile-php
         volumes:
             - ./www/back:/var/www/back
-
-
-    mariadb:
-        container_name: ${COMPOSE_PROJECT_NAME}-mariadb
-        image: mariadb:10.9.6
-        restart: always
-        ports:
-            - '3306:3306'
-        command: --default-authentication-plugin=mysql_native_password --skip-log-bin --default-time-zone=-03:00 --expire_logs_days=10 --sql_mode="" --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --performance_schema=ON --event_scheduler=ON --log_error=/var/log/mysql/mysql_error.log --slow_query_log=1 --slow_query_log_file=/var/log/mysql/mysql_slow.log --long_query_time=10 --log_queries_not_using_indexes=1
-        environment:
-            - MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
-            - MYSQL_PWD=$MYSQL_ROOT_PASSWORD
-            - TZ=America/Argentina/Buenos_Aires
-        volumes:
-            - ./mariadb/data:/var/lib/mysql
-            - ./mariadb/dump:/docker-entrypoint-initdb.d
-            - ./mariadb/logs:/var/log/mysql:Z
-
-    phpmyadmin:
-        container_name: ${COMPOSE_PROJECT_NAME}-phpmyadmin
-        image: phpmyadmin/phpmyadmin:5.2.1
-        restart: always
-        ports:
-            - '8181:80'
-        environment:
-            PMA_HOST: mariadb
-            UPLOAD_LIMIT: 100000000
