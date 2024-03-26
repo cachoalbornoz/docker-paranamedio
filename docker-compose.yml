@@ -2,8 +2,8 @@ version: '3.6'
 
 services:
 
-    mariadb:
-        container_name: ${COMPOSE_PROJECT_NAME}-mariadb
+    db:
+        container_name: ${COMPOSE_PROJECT_NAME}-db
         image: mariadb:10.9.6
         restart: always
         ports:
@@ -25,7 +25,7 @@ services:
         ports:
             - '8181:80'
         environment:
-            PMA_HOST: mariadb
+            PMA_HOST: db
             UPLOAD_LIMIT: 100000000
 
     nginx-proxy:
@@ -83,7 +83,7 @@ services:
 
     script-lecturas:
         container_name: ${COMPOSE_PROJECT_NAME}-script-lecturas
-        #restart: always
+        restart: always
         build:
             dockerfile: Dockerfile-php
         volumes:
